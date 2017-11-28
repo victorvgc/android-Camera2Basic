@@ -27,6 +27,7 @@ import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -35,9 +36,11 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
+import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.MeteringRectangle;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
@@ -53,6 +56,7 @@ import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -67,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -243,6 +248,7 @@ public class Camera2BasicFragment extends Fragment
 
         @Override
         public void onImageAvailable(ImageReader reader) {
+            mFile = new File(getActivity().getExternalFilesDir(null), "pic" + (new Date().toString()) +".jpg");
             mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
         }
 
@@ -429,12 +435,6 @@ public class Camera2BasicFragment extends Fragment
         view.findViewById(R.id.picture).setOnClickListener(this);
         view.findViewById(R.id.info).setOnClickListener(this);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mFile = new File(getActivity().getExternalFilesDir(null), "pic.jpg");
     }
 
     @Override
@@ -762,6 +762,70 @@ public class Camera2BasicFragment extends Fragment
         mTextureView.setTransform(matrix);
     }
 
+    public float finger_spacing = 0;
+    public int zoom_level = 1;
+
+    public boolean onTouchZoom(MotionEvent event) {
+        try {
+            Activity activity = getActivity();
+
+            assert activity != null;
+            CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+
+            assert manager != null;
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraId);
+
+            float maxzoom = (characteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM))*10;
+
+            Rect m = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+            float current_finger_spacing;
+
+            if (event.getPointerCount() > 1) {
+                // Multi touch logic
+                current_finger_spacing = getFingerSpacing(event);
+                if(finger_spacing != 0){
+                    if(current_finger_spacing > finger_spacing && maxzoom > zoom_level){
+                        zoom_level++;
+                    } else if (current_finger_spacing < finger_spacing && zoom_level > 1){
+                        zoom_level--;
+                    }
+
+                    assert m != null;
+                    int minW = (int) (m.width() / maxzoom);
+                    int minH = (int) (m.height() / maxzoom);
+                    int difW = m.width() - minW;
+                    int difH = m.height() - minH;
+                    int cropW = difW /100 * zoom_level;
+                    int cropH = difH /100 * zoom_level;
+                    cropW -= cropW & 3;
+                    cropH -= cropH & 3;
+                    Rect zoom = new Rect(cropW, cropH, m.width() - cropW, m.height() - cropH);
+                    mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, zoom);
+                }
+                finger_spacing = current_finger_spacing;
+            }
+
+            try {
+                mCaptureSession
+                        .setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureCallback, null);
+            } catch (CameraAccessException | NullPointerException e) {
+                e.printStackTrace();
+            }
+        } catch (CameraAccessException e) {
+            throw new RuntimeException("can not access camera.", e);
+        }
+        return true;
+    }
+
+
+    //Determine the space between the first two fingers
+    @SuppressWarnings("deprecation")
+    private float getFingerSpacing(MotionEvent event) {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return (float) Math.sqrt(x * x + y * y);
+    }
+
     /**
      * Initiate a still image capture.
      */
@@ -777,7 +841,7 @@ public class Camera2BasicFragment extends Fragment
             // This is how to tell the camera to lock focus.
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_START);
-            // Tell #mCaptureCallback to wait for the lock.
+            // Tell mCaptureCallback to wait for the lock.
             mState = STATE_WAITING_LOCK;
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);

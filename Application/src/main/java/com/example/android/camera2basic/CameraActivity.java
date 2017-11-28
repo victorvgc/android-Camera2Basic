@@ -18,18 +18,27 @@ package com.example.android.camera2basic;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 
 public class CameraActivity extends AppCompatActivity {
+    private Camera2BasicFragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+
+        fragment = Camera2BasicFragment.newInstance();
         if (null == savedInstanceState) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, Camera2BasicFragment.newInstance())
+                    .replace(R.id.container, fragment)
                     .commit();
         }
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        assert fragment != null;
+        return fragment.onTouchZoom(event);
+    }
 }
