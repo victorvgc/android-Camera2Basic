@@ -956,10 +956,6 @@
         "source": "C:\\Users\\victor.carvalho\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-27.0.1.aar\\29ee4e7c63b38264b09bad88ba7078b2\\res\\drawable-xxxhdpi-v4\\abc_ic_menu_selectall_mtrl_alpha.png"
     },
     {
-        "merged": "D:\\android-Camera2Basic\\Application\\build\\intermediates\\res\\merged\\debug\\color_abc_btn_colored_borderless_text_material.xml.flat",
-        "source": "C:\\Users\\victor.carvalho\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-26.1.0.aar\\ff2372d2ef8ee62dbd1f7481d5225e75\\res\\color\\abc_btn_colored_borderless_text_material.xml"
-    },
-    {
         "merged": "D:\\android-Camera2Basic\\Application\\build\\intermediates\\res\\merged\\debug\\drawable-xxhdpi-v4_abc_ab_share_pack_mtrl_alpha.9.png.flat",
         "source": "C:\\Users\\victor.carvalho\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-27.0.1.aar\\29ee4e7c63b38264b09bad88ba7078b2\\res\\drawable-xxhdpi-v4\\abc_ab_share_pack_mtrl_alpha.9.png"
     },

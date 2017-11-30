@@ -18,7 +18,6 @@ package com.example.android.camera2basic;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.MotionEvent;
 
 public class CameraActivity extends AppCompatActivity {
     private Camera2BasicFragment fragment;
@@ -34,11 +33,5 @@ public class CameraActivity extends AppCompatActivity {
                     .replace(R.id.container, fragment)
                     .commit();
         }
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        assert fragment != null;
-        return fragment.onTouchZoom(event);
     }
 }

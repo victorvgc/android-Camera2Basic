@@ -67,6 +67,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -248,7 +249,7 @@ public class Camera2BasicFragment extends Fragment
 
         @Override
         public void onImageAvailable(ImageReader reader) {
-            mFile = new File(getActivity().getExternalFilesDir(null), "pic" + (new Date().toString()) +".jpg");
+            mFile = new File(getActivity().getExternalFilesDir(null), "pic" + new SimpleDateFormat("ddMMyyHHmmss").format(new Date()) + ".jpg");
             mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
         }
 
@@ -435,6 +436,8 @@ public class Camera2BasicFragment extends Fragment
         view.findViewById(R.id.picture).setOnClickListener(this);
         view.findViewById(R.id.info).setOnClickListener(this);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
+
+        mTextureView.setFragment(this);
     }
 
     @Override
@@ -513,7 +516,7 @@ public class Camera2BasicFragment extends Fragment
                         Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
                         new CompareSizesByArea());
                 mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
-                        ImageFormat.JPEG, /*maxImages*/2);
+                        ImageFormat.JPEG,2);
                 mImageReader.setOnImageAvailableListener(
                         mOnImageAvailableListener, mBackgroundHandler);
 
@@ -764,6 +767,7 @@ public class Camera2BasicFragment extends Fragment
 
     public float finger_spacing = 0;
     public int zoom_level = 1;
+    private Rect zoom;
 
     public boolean onTouchZoom(MotionEvent event) {
         try {
@@ -785,9 +789,9 @@ public class Camera2BasicFragment extends Fragment
                 current_finger_spacing = getFingerSpacing(event);
                 if(finger_spacing != 0){
                     if(current_finger_spacing > finger_spacing && maxzoom > zoom_level){
-                        zoom_level++;
+                        zoom_level ++;
                     } else if (current_finger_spacing < finger_spacing && zoom_level > 1){
-                        zoom_level--;
+                        zoom_level --;
                     }
 
                     assert m != null;
@@ -799,7 +803,7 @@ public class Camera2BasicFragment extends Fragment
                     int cropH = difH /100 * zoom_level;
                     cropW -= cropW & 3;
                     cropH -= cropH & 3;
-                    Rect zoom = new Rect(cropW, cropH, m.width() - cropW, m.height() - cropH);
+                    zoom = new Rect(cropW, cropH, m.width() - cropW, m.height() - cropH);
                     mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, zoom);
                 }
                 finger_spacing = current_finger_spacing;
@@ -824,6 +828,148 @@ public class Camera2BasicFragment extends Fragment
         float x = event.getX(0) - event.getX(1);
         float y = event.getY(0) - event.getY(1);
         return (float) Math.sqrt(x * x + y * y);
+    }
+
+    private boolean mManualFocusEngaged = false;
+
+    public boolean onTouchFocus(MotionEvent motionEvent) {
+        final int actionMasked = motionEvent.getActionMasked();
+        if (actionMasked != MotionEvent.ACTION_DOWN) {
+            return false;
+        }
+        if (mManualFocusEngaged) {
+            Log.d(TAG, "Manual focus already engaged");
+            return true;
+        }
+
+        try {
+            TextureView view = mTextureView;
+
+            Activity activity = getActivity();
+
+            assert activity != null;
+            CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+
+            assert manager != null;
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraId);
+
+            final Rect sensorArraySize = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+
+            int displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+
+            mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+            boolean swappedDimensions = false;
+            switch (displayRotation) {
+                case Surface.ROTATION_0:
+                case Surface.ROTATION_180:
+                    if (mSensorOrientation == 90 || mSensorOrientation == 270) {
+                        swappedDimensions = true;
+                    }
+                    break;
+                case Surface.ROTATION_90:
+                case Surface.ROTATION_270:
+                    if (mSensorOrientation == 0 || mSensorOrientation == 180) {
+                        swappedDimensions = true;
+                    }
+                    break;
+                default:
+                    Log.e(TAG, "Display rotation is invalid: " + displayRotation);
+            }
+
+            Point displaySize = new Point();
+            activity.getWindowManager().getDefaultDisplay().getSize(displaySize);
+            int rotatedPreviewWidth = (int) ((motionEvent.getX() / (float) view.getWidth()) * (float) sensorArraySize.height());
+            int rotatedPreviewHeight = (int) ((motionEvent.getY() / (float) view.getHeight()) * (float) sensorArraySize.width());
+
+            if (swappedDimensions) {
+                rotatedPreviewWidth = (int) ((motionEvent.getY() / (float) view.getHeight()) * (float) sensorArraySize.width());
+                rotatedPreviewHeight = (int) ((motionEvent.getX() / (float) view.getWidth()) * (float) sensorArraySize.height());
+            }
+
+            final int halfTouchWidth = (int)motionEvent.getTouchMajor(); //TODO: this doesn't represent actual touch size in pixel. Values range in [3, 10]...
+            final int halfTouchHeight = (int)motionEvent.getTouchMinor();
+            MeteringRectangle focusAreaTouch = new MeteringRectangle(Math.max(rotatedPreviewWidth - halfTouchWidth, 0),
+                    Math.max(rotatedPreviewHeight - halfTouchHeight, 0),
+                    halfTouchWidth * 2,
+                    halfTouchHeight * 2,
+                    MeteringRectangle.METERING_WEIGHT_MAX - 1);
+
+            CameraCaptureSession.CaptureCallback captureCallbackHandler = new CameraCaptureSession.CaptureCallback() {
+                @Override
+                public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
+                    super.onCaptureCompleted(session, request, result);
+                    mManualFocusEngaged = false;
+
+                    if (request.getTag() == "FOCUS_TAG") {
+                        //the focus trigger is complete -
+                        //resume repeating (preview surface will get frames), clear AF trigger
+                        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, null);
+                        try {
+                            mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, null);
+                        } catch (CameraAccessException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                @Override
+                public void onCaptureFailed(CameraCaptureSession session, CaptureRequest request, CaptureFailure failure) {
+                    super.onCaptureFailed(session, request, failure);
+                    Log.e(TAG, "Manual AF failure: " + failure);
+                    mManualFocusEngaged = false;
+                }
+            };
+
+            //first stop the existing repeating request
+            if(mCaptureSession == null) {
+                Log.d("ERROR", " !! - CAPTURE SESSION == NULL - !!");
+                return true;
+            }
+            mCaptureSession.stopRepeating();
+
+            //cancel any existing AF trigger (repeated touches, etc.)
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
+            mCaptureSession.capture(mPreviewRequestBuilder.build(), captureCallbackHandler, mBackgroundHandler);
+
+            //Now add a new AF trigger with focus region
+            if (isMeteringAreaAFSupported()) {
+                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, new MeteringRectangle[]{focusAreaTouch});
+            }
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+            mPreviewRequestBuilder.setTag("FOCUS_TAG"); //we'll capture this later for resuming the preview
+
+            //then we ask for a single request (not repeating!)
+            mCaptureSession.capture(mPreviewRequestBuilder.build(), captureCallbackHandler, mBackgroundHandler);
+            mManualFocusEngaged = true;
+            } catch (CameraAccessException e1) {
+            e1.printStackTrace();
+        }
+
+        return true;
+    }
+
+    private boolean isMeteringAreaAFSupported() {
+        Activity activity = getActivity();
+
+        assert activity != null;
+        CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+
+        assert manager != null;
+        try {
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraId);
+
+
+        return characteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF) >= 1;
+
+        }
+        catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     /**
@@ -883,6 +1029,10 @@ public class Camera2BasicFragment extends Fragment
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(mImageReader.getSurface());
 
+            if(zoom != null) {
+                captureBuilder.set(CaptureRequest.SCALER_CROP_REGION, zoom);
+            }
+
             // Use the same AE and AF modes as the preview.
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
@@ -936,6 +1086,10 @@ public class Camera2BasicFragment extends Fragment
             // Reset the auto-focus trigger
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+
+            if(zoom != null)
+                mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, zoom);
+
             setAutoFlash(mPreviewRequestBuilder);
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);

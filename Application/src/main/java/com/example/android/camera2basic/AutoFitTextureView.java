@@ -18,6 +18,7 @@ package com.example.android.camera2basic;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.TextureView;
 
 /**
@@ -27,6 +28,7 @@ public class AutoFitTextureView extends TextureView {
 
     private int mRatioWidth = 0;
     private int mRatioHeight = 0;
+    private Camera2BasicFragment fragment;
 
     public AutoFitTextureView(Context context) {
         this(context, null);
@@ -40,6 +42,9 @@ public class AutoFitTextureView extends TextureView {
         super(context, attrs, defStyle);
     }
 
+    public void setFragment(Camera2BasicFragment fragment){
+        this.fragment = fragment;
+    }
     /**
      * Sets the aspect ratio for this view. The size of the view will be measured based on the ratio
      * calculated from the parameters. Note that the actual sizes of parameters don't matter, that
@@ -73,4 +78,14 @@ public class AutoFitTextureView extends TextureView {
         }
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                return fragment.onTouchFocus(event);
+
+            default:
+                return fragment.onTouchZoom(event);
+        }
+    }
 }
