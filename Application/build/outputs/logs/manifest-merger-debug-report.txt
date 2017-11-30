@@ -1,6 +1,6 @@
 -- Merging decision tree log ---
 manifest
-ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:18:1-40:12
+ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:16:1-45:12
 MERGED from [com.android.support:support-v13:27.0.1] C:\Users\victor.carvalho\.gradle\caches\transforms-1\files-1.1\support-v13-27.0.1.aar\3d6c9e3cbec185808e0075880084c1f1\AndroidManifest.xml:17:1-22:12
 MERGED from [com.android.support:support-v4:27.0.1] C:\Users\victor.carvalho\.gradle\caches\transforms-1\files-1.1\support-v4-27.0.1.aar\4b68f19ce4aa41ebecface58ab6ff68f\AndroidManifest.xml:17:1-22:12
 MERGED from [com.android.support:cardview-v7:27.0.1] C:\Users\victor.carvalho\.gradle\caches\transforms-1\files-1.1\cardview-v7-27.0.1.aar\9b3eefb3759c8da6e2723fa737cf459a\AndroidManifest.xml:17:1-22:12
@@ -14,49 +14,59 @@ MERGED from [com.android.support:support-vector-drawable:27.0.1] C:\Users\victor
 MERGED from [com.android.support:support-compat:27.0.1] C:\Users\victor.carvalho\.gradle\caches\transforms-1\files-1.1\support-compat-27.0.1.aar\a7248d847f82617d0e6de554725c4e92\AndroidManifest.xml:17:1-22:12
 MERGED from [android.arch.lifecycle:runtime:1.0.0] C:\Users\victor.carvalho\.gradle\caches\transforms-1\files-1.1\runtime-1.0.0.aar\88bc940fba7dcd468e64f0f3788f1ffe\AndroidManifest.xml:17:1-30:12
 	package
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:19:5-47
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:17:5-47
 	xmlns:android
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:18:11-69
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:16:11-69
 uses-permission#android.permission.CAMERA
-ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:21:5-65
+ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:19:5-65
 	android:name
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:21:22-62
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:19:22-62
 uses-feature#android.hardware.camera
-ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:23:5-60
+ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:21:5-60
 	android:name
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:23:19-57
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:21:19-57
 uses-feature#android.hardware.camera.autofocus
-ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:24:5-70
+ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:22:5-70
 	android:name
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:24:19-67
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:22:19-67
 application
-ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:26:5-38:19
+ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:24:5-43:19
 MERGED from [android.arch.lifecycle:runtime:1.0.0] C:\Users\victor.carvalho\.gradle\caches\transforms-1\files-1.1\runtime-1.0.0.aar\88bc940fba7dcd468e64f0f3788f1ffe\AndroidManifest.xml:24:5-28:19
 MERGED from [android.arch.lifecycle:runtime:1.0.0] C:\Users\victor.carvalho\.gradle\caches\transforms-1\files-1.1\runtime-1.0.0.aar\88bc940fba7dcd468e64f0f3788f1ffe\AndroidManifest.xml:24:5-28:19
 	android:label
 		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:27:9-41
 	android:icon
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:28:9-45
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:26:9-45
 	android:allowBackup
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:26:18-44
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:25:9-35
 	android:theme
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:29:9-45
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:28:9-45
 activity#com.example.android.camera2basic.CameraActivity
-ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:31:9-37:20
+ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:29:9-37:20
 	android:label
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:32:19-51
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:31:13-45
 	android:name
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:31:19-49
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:30:13-43
 intent-filter#android.intent.action.MAIN+android.intent.category.LAUNCHER
-ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:33:13-36:29
+ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:32:13-36:29
 action#android.intent.action.MAIN
-ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:34:17-69
+ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:33:17-69
 	android:name
-		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:34:25-66
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:33:25-66
 category#android.intent.category.LAUNCHER
 ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:35:17-77
 	android:name
 		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:35:27-74
+activity#com.example.android.camera2basic.PreviewPhotoActivity
+ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:38:9-42:63
+	android:label
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:41:13-65
+	android:configChanges
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:40:13-74
+	android:theme
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:42:13-51
+	android:name
+		ADDED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml:39:13-49
 uses-sdk
 INJECTED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from D:\android-Camera2Basic\Application\src\main\AndroidManifest.xml

@@ -22,6 +22,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
@@ -250,7 +251,9 @@ public class Camera2BasicFragment extends Fragment
         @Override
         public void onImageAvailable(ImageReader reader) {
             mFile = new File(getActivity().getExternalFilesDir(null), "pic" + new SimpleDateFormat("ddMMyyHHmmss").format(new Date()) + ".jpg");
-            mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
+            mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile, getActivity()));
+
+            //startPreviewActivity();
         }
 
     };
@@ -304,7 +307,9 @@ public class Camera2BasicFragment extends Fragment
                     if (afState == null) {
                         captureStillPicture();
                     } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
-                            CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
+                            CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState ||
+                            CaptureResult.CONTROL_AF_STATE_PASSIVE_FOCUSED ==  afState ||
+                            CaptureResult.CONTROL_AF_STATE_INACTIVE == afState) {
                         // CONTROL_AE_STATE can be null on some devices
                         Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                         if (aeState == null ||
@@ -434,8 +439,7 @@ public class Camera2BasicFragment extends Fragment
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         view.findViewById(R.id.picture).setOnClickListener(this);
-        view.findViewById(R.id.info).setOnClickListener(this);
-        mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
+        mTextureView = view.findViewById(R.id.texture);
 
         mTextureView.setFragment(this);
     }
@@ -886,13 +890,13 @@ public class Camera2BasicFragment extends Fragment
                 rotatedPreviewHeight = (int) ((motionEvent.getX() / (float) view.getWidth()) * (float) sensorArraySize.height());
             }
 
-            final int halfTouchWidth = (int)motionEvent.getTouchMajor(); //TODO: this doesn't represent actual touch size in pixel. Values range in [3, 10]...
-            final int halfTouchHeight = (int)motionEvent.getTouchMinor();
+            final int halfTouchWidth = 150; //(int)motionEvent.getTouchMajor(); //TODO: this doesn't represent actual touch size in pixel. Values range in [3, 10]...
+            final int halfTouchHeight = 150; //(int)motionEvent.getTouchMinor();
             MeteringRectangle focusAreaTouch = new MeteringRectangle(Math.max(rotatedPreviewWidth - halfTouchWidth, 0),
                     Math.max(rotatedPreviewHeight - halfTouchHeight, 0),
                     halfTouchWidth * 2,
                     halfTouchHeight * 2,
-                    MeteringRectangle.METERING_WEIGHT_MAX - 1);
+                    MeteringRectangle.METERING_WEIGHT_MAX);
 
             CameraCaptureSession.CaptureCallback captureCallbackHandler = new CameraCaptureSession.CaptureCallback() {
                 @Override
@@ -985,8 +989,8 @@ public class Camera2BasicFragment extends Fragment
     private void lockFocus() {
         try {
             // This is how to tell the camera to lock focus.
-            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
-                    CameraMetadata.CONTROL_AF_TRIGGER_START);
+            //    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+            //            CameraMetadata.CONTROL_AF_TRIGGER_START);
             // Tell mCaptureCallback to wait for the lock.
             mState = STATE_WAITING_LOCK;
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
@@ -1095,7 +1099,7 @@ public class Camera2BasicFragment extends Fragment
                     mBackgroundHandler);
             // After this, the camera will go back to the normal state of preview.
             mState = STATE_PREVIEW;
-            mCaptureSession.setRepeatingRequest(mPreviewRequest, mCaptureCallback,
+            mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -1107,16 +1111,6 @@ public class Camera2BasicFragment extends Fragment
         switch (view.getId()) {
             case R.id.picture: {
                 takePicture();
-                break;
-            }
-            case R.id.info: {
-                Activity activity = getActivity();
-                if (null != activity) {
-                    new AlertDialog.Builder(activity)
-                            .setMessage(R.string.intro_message)
-                            .setPositiveButton(android.R.string.ok, null)
-                            .show();
-                }
                 break;
             }
         }
@@ -1143,9 +1137,12 @@ public class Camera2BasicFragment extends Fragment
          */
         private final File mFile;
 
-        ImageSaver(Image image, File file) {
+        private Activity activity;
+
+        ImageSaver(Image image, File file, Activity activity) {
             mImage = image;
             mFile = file;
+            this.activity = activity;
         }
 
         @Override
@@ -1157,6 +1154,11 @@ public class Camera2BasicFragment extends Fragment
             try {
                 output = new FileOutputStream(mFile);
                 output.write(bytes);
+
+                Intent intent = new Intent(activity, PreviewPhotoActivity.class);
+                intent.putExtra("file", mFile);
+
+                activity.startActivity(intent);
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {

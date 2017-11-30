@@ -42,6 +42,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.example.android.camera2basic.PreviewPhotoActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_preview_photo"
+            android:theme="@style/FullscreenTheme" />
 
         <meta-data
             android:name="android.arch.lifecycle.VERSION"
