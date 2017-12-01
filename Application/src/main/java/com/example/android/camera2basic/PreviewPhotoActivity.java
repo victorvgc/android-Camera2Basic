@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.File;
 
@@ -142,6 +143,8 @@ public class PreviewPhotoActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+
+        Toast.makeText(this, "Photo taken", Toast.LENGTH_SHORT).show();
 
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls

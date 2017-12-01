@@ -14,8 +14,21 @@
  limitations under the License.
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/picture3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="53dp"
+        android:clickable="true"
+        android:tint="#FFFFFF"
+        app:backgroundTint="#000000"
+        app:srcCompat="@drawable/ic_photo_camera_black_24dp" />
 
     <com.example.android.camera2basic.AutoFitTextureView
         android:id="@+id/texture"
@@ -23,15 +36,5 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true" />
-
-    <Button
-        android:id="@+id/picture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:layout_gravity="center"
-        android:layout_marginEnd="36dp"
-        android:text="@string/picture" />
 
 </RelativeLayout>

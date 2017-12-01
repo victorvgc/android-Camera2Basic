@@ -890,8 +890,8 @@ public class Camera2BasicFragment extends Fragment
                 rotatedPreviewHeight = (int) ((motionEvent.getX() / (float) view.getWidth()) * (float) sensorArraySize.height());
             }
 
-            final int halfTouchWidth = 150; //(int)motionEvent.getTouchMajor(); //TODO: this doesn't represent actual touch size in pixel. Values range in [3, 10]...
-            final int halfTouchHeight = 150; //(int)motionEvent.getTouchMinor();
+            final int halfTouchWidth = 150;
+            final int halfTouchHeight = 150;
             MeteringRectangle focusAreaTouch = new MeteringRectangle(Math.max(rotatedPreviewWidth - halfTouchWidth, 0),
                     Math.max(rotatedPreviewHeight - halfTouchHeight, 0),
                     halfTouchWidth * 2,
@@ -1053,7 +1053,7 @@ public class Camera2BasicFragment extends Fragment
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                                @NonNull CaptureRequest request,
                                                @NonNull TotalCaptureResult result) {
-                    showToast("Saved: " + mFile);
+                    //showToast("Saved: " + mFile);
                     Log.d(TAG, mFile.toString());
                     unlockFocus();
                 }

@@ -48,10 +48,6 @@
             android:label="@string/title_activity_preview_photo"
             android:theme="@style/FullscreenTheme" />
 
-        <meta-data
-            android:name="android.arch.lifecycle.VERSION"
-            android:value="27.0.0-SNAPSHOT" />
-
         <provider
             android:name="com.android.tools.ir.server.InstantRunContentProvider"
             android:authorities="com.example.android.camera2basic.com.android.tools.ir.server.InstantRunContentProvider"
